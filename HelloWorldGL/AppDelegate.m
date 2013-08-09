@@ -9,10 +9,18 @@
 #import "AppDelegate.h"
 
 @implementation AppDelegate
+@synthesize glView = _glView;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    CGRect screenBounds = [[UIScreen mainScreen] bounds];
+    self.glView = [[OpenGLView alloc] initWithFrame:screenBounds];
+    
+  
+    
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+      [self.window addSubview:_glView];
+//    [self.window setRootViewController:someController];
     // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
