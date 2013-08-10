@@ -11,7 +11,7 @@
 @interface AppDelegate : UIResponder <UIApplicationDelegate> {
     OpenGLView *_glView;
 }
-@property (nonatomic, retain) IBOutlet OpenGLView *glView;
+@property (nonatomic, strong) IBOutlet OpenGLView *glView;
 
 
 

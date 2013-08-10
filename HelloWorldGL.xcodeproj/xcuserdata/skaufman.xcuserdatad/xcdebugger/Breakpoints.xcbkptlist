@@ -8,11 +8,13 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "HelloWorldGL/OpenGLView.h"
-         timestampString = "397710426.793407"
+         timestampString = "397749047.017289"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "20"
-         endingLineNumber = "20">
+         startingLineNumber = "22"
+         endingLineNumber = "22"
+         landmarkName = "@interface OpenGLView"
+         landmarkType = "2">
       </FileBreakpoint>
       <FileBreakpoint
          shouldBeEnabled = "No"

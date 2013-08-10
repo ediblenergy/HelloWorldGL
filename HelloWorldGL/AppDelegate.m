@@ -19,7 +19,8 @@
   
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-      [self.window addSubview:_glView];
+    [self.window addSubview:_glView];
+//    [ self.window setRootViewController:_glView];
 //    [self.window setRootViewController:someController];
     // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
