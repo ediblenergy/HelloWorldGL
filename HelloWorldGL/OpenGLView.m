@@ -157,13 +157,15 @@ const Vertex Vertices[] = {
     {{1, -1, 0}, {1, 0, 0, 1}},
     {{1, 1, 0}, {0, 1, 0, 1}},
     {{-1, 1, 0}, {0, 0, 1, 1}},
-    {{-1, -1, 0}, {0, 0, 0, 1}}
+    {{-1, -1, 0}, {1, 1, 1, 1}}
 };
 
 const GLubyte Indices[] = {
     0,1,2,
     2,3,0
 };
+
+
 - (void)setupVBOs {
     
     GLuint vertexBuffer;
@@ -179,9 +181,7 @@ const GLubyte Indices[] = {
 }
 
 - (void) render:(CADisplayLink*)displayLink {
-    NSLog(@"render()");
-
-    glClearColor(0, 104.0/255.0, 55.0/255.0, 1.0);
+    glClearColor(0,0,0,1);
     glClear( GL_COLOR_BUFFER_BIT );
     
     // Add to render, right before the call to glViewport
