@@ -7,7 +7,6 @@
 //
 // Add to top of file
 #import "CC3GLMatrix.h"
- 
 #import "OpenGLView.h"
 
 @implementation OpenGLView
@@ -151,9 +150,9 @@
 typedef struct {
     float Position[3];
     float Color[4];
-} Vertex;
+} V;
 
-const Vertex Vertices[] = {
+const V Vertices[] = {
     {{1, -1, 0}, {1, 0, 0, 1}},
     {{1, 1, 0}, {0, 1, 0, 1}},
     {{-1, 1, 0}, {0, 0, 1, 1}},
@@ -164,9 +163,64 @@ const GLubyte Indices[] = {
     0,1,2,
     2,3,0
 };
+typedef struct {
+    float x;
+    float y;
+    float z;
+} CelluloVector;
 
+CelluloVector* createCelluloVector(float x, float y, float z) {
+    CelluloVector* v = malloc(sizeof( CelluloVector));
+    v->x = x;
+    v->y = y;
+    v->z = z;
+    return v;
+}
+
+typedef struct CelluloBox {
+    float _top;
+    float _left;
+    float _diameter;
+    CelluloVector* ( *topLeft )( struct CelluloBox* );
+    CelluloVector* ( *topRight )( struct CelluloBox );
+    CelluloVector* ( *bottomLeft )( struct CelluloBox );
+    CelluloVector* ( *bottomRight )( struct CelluloBox );
+} CelluloBox;
+
+
+
+CelluloVector* _CelluloBoxTopLeft( CelluloBox* cb ) {
+    return createCelluloVector( cb->_left, cb->_top, 0 );
+}
+
+CelluloVector* _CelluloBoxTopRight( CelluloBox cb ) {
+    return createCelluloVector( cb._left + cb._diameter, cb._top, 0 );
+}
+
+CelluloVector* _CelluloBoxBottomRight( CelluloBox cb ) {
+    return createCelluloVector( cb._left + cb._diameter, cb._top + cb._diameter, 0 );
+}
+    
+CelluloVector* _CelluloBoxBottomLeft( CelluloBox cb ) {
+    return createCelluloVector( cb._left, cb._top + cb._diameter, 0 );
+}
+
+CelluloBox* createCelluloBox( float l, float t ) {
+    CelluloBox* cb = malloc(sizeof(CelluloBox));
+    cb->_top = t;
+    cb->_left = l;
+    cb->topLeft = &_CelluloBoxTopLeft;
+    cb->topRight = &_CelluloBoxTopRight;
+    cb->bottomRight = &_CelluloBoxBottomRight;
+    cb->bottomLeft = &_CelluloBoxBottomLeft;
+    return cb;
+}
 
 - (void)setupVBOs {
+    V vertexes[] = { {1,2,3} };
+    CelluloBox* cb = createCelluloBox(1.0, 5.0);
+    CelluloVector* tl  = cb->topLeft(cb);
+    NSLog(@"cb->topLeft = (%f,%f)", tl->x, tl->y );
     
     GLuint vertexBuffer;
     glGenBuffers(1, &vertexBuffer);
@@ -209,7 +263,7 @@ const GLubyte Indices[] = {
                           3,
                           GL_FLOAT,
                           GL_FALSE,
-                          sizeof(Vertex),
+                          sizeof(V),
                           0
                           );
     
@@ -218,7 +272,7 @@ const GLubyte Indices[] = {
                           4,
                           GL_FLOAT,
                           GL_FALSE,
-                          sizeof(Vertex),
+                          sizeof(V),
                           (GLvoid*) (sizeof(float) * 3)
                           );
     
