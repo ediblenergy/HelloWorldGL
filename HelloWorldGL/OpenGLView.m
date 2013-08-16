@@ -185,7 +185,7 @@ typedef struct CelluloBox {
     CelluloVector* ( *topRight )( struct CelluloBox* );
     CelluloVector* ( *bottomLeft )( struct CelluloBox* );
     CelluloVector* ( *bottomRight )( struct CelluloBox* );
-    Vertex*        ( *vertices )( struct CelluloBox* );
+    Vertex*        ( *vertices )( struct CelluloBox*, Vertex* );
 } CelluloBox;
 
 
@@ -206,18 +206,18 @@ CelluloVector* _CelluloBoxBottomLeft( CelluloBox* cb ) {
     return createCelluloVector( cb->_left, cb->_top + cb->_diameter, 0 );
 }
 
-Vertex* _CelluloBoxVertices( CelluloBox* cb ) {
-    Vertex *vertex = (Vertex*)malloc(sizeof(Vertex)*4);
+Vertex* _CelluloBoxVertices( CelluloBox* cb, Vertex *data ) {
+//    Vertex *vertex = (Vertex*)malloc(sizeof(Vertex)*4);
 //    (words*)malloc(sizeof(words) * 100);
     CelluloVector* tl = cb->topLeft(cb);
     CelluloVector* tr = cb->topRight(cb);
     CelluloVector* br = cb->bottomRight(cb);
     CelluloVector* bl = cb->bottomLeft(cb);
-    vertex[0] = (Vertex) {{tl->x,tl->y,tl->z},{1, 0, 0, 1}};
-    vertex[1] = (Vertex) {{tr->x,tr->y,tr->z},{1, 0, 0, 1}};
-    vertex[2] = (Vertex) {{br->x,br->y,br->z},{1, 0, 0, 1}};
-    vertex[3] = (Vertex) {{bl->x,bl->y,bl->z},{1, 0, 0, 1}};
-    return vertex;
+    data[0] = (Vertex) {{tl->x,tl->y,tl->z},{1, 0, 0, 1}};
+    data[1] = (Vertex) {{tr->x,tr->y,tr->z},{1, 0, 0, 1}};
+    data[2] = (Vertex) {{br->x,br->y,br->z},{1, 0, 0, 1}};
+    data[3] = (Vertex) {{bl->x,bl->y,bl->z},{1, 0, 0, 1}};
+    return data;
 }
 CelluloBox* createCelluloBox( float l, float t, float diameter ) {
     CelluloBox* cb = malloc(sizeof(CelluloBox));
@@ -234,19 +234,19 @@ CelluloBox* createCelluloBox( float l, float t, float diameter ) {
 
 - (void)setupVBOs {
     
-    CelluloBox* cb = createCelluloBox(-1.0, 1.0,2.0);
+    CelluloBox* cb = createCelluloBox(-1.0, 0.0,2.0);
     CelluloVector* tl  = cb->topLeft(cb);
-//    Vertex* vertexes =
-    
-    Vertex* vertex = cb->vertices(cb);
+    Vertex *vertex = (Vertex*)malloc(sizeof(Vertex)*4);
+
+    cb->vertices(cb,vertex);
     NSLog(@"cb->topLeft = (%f,%f)", tl->x, tl->y );
-    NSLog(@"vertexes[2] = %f",vertex->Color);
+   NSLog(@"vertexes[2] = %d",vertex[2].Color);
     
     GLuint vertexBuffer;
     glGenBuffers(1, &vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
     
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)*4, vertex, GL_STATIC_DRAW);
     GLuint indexBuffer;
     glGenBuffers(1, &indexBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
