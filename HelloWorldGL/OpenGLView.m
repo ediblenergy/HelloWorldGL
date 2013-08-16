@@ -214,9 +214,9 @@ Vertex* _CelluloBoxVertices( CelluloBox* cb, Vertex *data ) {
     CelluloVector* br = cb->bottomRight(cb);
     CelluloVector* bl = cb->bottomLeft(cb);
     data[0] = (Vertex) {{tl->x,tl->y,tl->z},{1, 0, 0, 1}};
-    data[1] = (Vertex) {{tr->x,tr->y,tr->z},{1, 0, 0, 1}};
-    data[2] = (Vertex) {{br->x,br->y,br->z},{1, 0, 0, 1}};
-    data[3] = (Vertex) {{bl->x,bl->y,bl->z},{1, 0, 0, 1}};
+    data[1] = (Vertex) {{tr->x,tr->y,tr->z},{1, 0, 1, 1}};
+    data[2] = (Vertex) {{br->x,br->y,br->z},{1, 0, 1, 1}};
+    data[3] = (Vertex) {{bl->x,bl->y,bl->z},{1, 1, 0, 1}};
     return data;
 }
 CelluloBox* createCelluloBox( float l, float t, float diameter ) {
@@ -233,24 +233,36 @@ CelluloBox* createCelluloBox( float l, float t, float diameter ) {
 }
 
 - (void)setupVBOs {
-    
-    CelluloBox* cb = createCelluloBox(-1.0, 0.0,2.0);
-    CelluloVector* tl  = cb->topLeft(cb);
-    Vertex *vertex = (Vertex*)malloc(sizeof(Vertex)*4);
-
-    cb->vertices(cb,vertex);
-    NSLog(@"cb->topLeft = (%f,%f)", tl->x, tl->y );
-   NSLog(@"vertexes[2] = %d",vertex[2].Color);
+    int num_boxes = 6;
+   
+    Vertex *vertex = (Vertex*)malloc(sizeof(Vertex)*4*num_boxes);
+    GLubyte indices[6 * num_boxes];
+    int im_dumb_ind = 0;
+    for(int i = 0; i < num_boxes; i++ ) {
+        CelluloBox* cb = createCelluloBox(0.0+i, -5.0+i,.5);
+        cb->vertices(cb,&vertex[4*i]);
+        for(int ii = 0; ii < 6; ii++) {
+            NSLog(@"indices[imdumb]=%d",Indices[ii]+(i*4));
+            indices[im_dumb_ind] = Indices[ii] + (i*4);
+            im_dumb_ind++;
+        }
+    }
+    for(int i = 0; i < 4*num_boxes; i++ ) {
+        NSLog(@"top %f left %f",
+              vertex[i].Position[0],
+              vertex[i].Position[1]
+              );
+    }
     
     GLuint vertexBuffer;
     glGenBuffers(1, &vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
     
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)*4, vertex, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)*4*num_boxes, vertex, GL_STATIC_DRAW);
     GLuint indexBuffer;
     glGenBuffers(1, &indexBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     
 }
 
@@ -272,7 +284,7 @@ CelluloBox* createCelluloBox( float l, float t, float diameter ) {
     glUniformMatrix4fv(_projectionUniform, 1, 0, projection.glMatrix);
 
     CC3GLMatrix *modelView = [CC3GLMatrix matrix];
-    [modelView populateFromTranslation:CC3VectorMake(sin(CACurrentMediaTime()), 0, -7)];
+    [modelView populateFromTranslation:CC3VectorMake(sin(CACurrentMediaTime()), 0, -10)];
     glUniformMatrix4fv(_modelViewUniform, 1, 0, modelView.glMatrix);
 
     glViewport(0, 0, self.frame.size.width, self.frame.size.height);
@@ -297,7 +309,7 @@ CelluloBox* createCelluloBox( float l, float t, float diameter ) {
                           );
     
     // 3
-    glDrawElements(GL_TRIANGLES, sizeof(Indices)/sizeof(Indices[0]),
+    glDrawElements(GL_TRIANGLES, (sizeof(Indices)*5)/sizeof(Indices[0]),
                    GL_UNSIGNED_BYTE, 0);
     
     [ _context presentRenderbuffer: GL_RENDERBUFFER ];
