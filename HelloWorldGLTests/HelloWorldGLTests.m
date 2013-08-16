@@ -8,6 +8,7 @@
 
 #import "HelloWorldGLTests.h"
 #import "Cell.h"
+#import "Vertex.h"
 
 @implementation HelloWorldGLTests
 

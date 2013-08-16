@@ -150,9 +150,9 @@
 typedef struct {
     float Position[3];
     float Color[4];
-} V;
+} Vertex;
 
-const V Vertices[] = {
+const Vertex Vertices[] = {
     {{1, -1, 0}, {1, 0, 0, 1}},
     {{1, 1, 0}, {0, 1, 0, 1}},
     {{-1, 1, 0}, {0, 0, 1, 1}},
@@ -182,9 +182,10 @@ typedef struct CelluloBox {
     float _left;
     float _diameter;
     CelluloVector* ( *topLeft )( struct CelluloBox* );
-    CelluloVector* ( *topRight )( struct CelluloBox );
-    CelluloVector* ( *bottomLeft )( struct CelluloBox );
-    CelluloVector* ( *bottomRight )( struct CelluloBox );
+    CelluloVector* ( *topRight )( struct CelluloBox* );
+    CelluloVector* ( *bottomLeft )( struct CelluloBox* );
+    CelluloVector* ( *bottomRight )( struct CelluloBox* );
+    Vertex*        ( *vertices )( struct CelluloBox* );
 } CelluloBox;
 
 
@@ -193,34 +194,53 @@ CelluloVector* _CelluloBoxTopLeft( CelluloBox* cb ) {
     return createCelluloVector( cb->_left, cb->_top, 0 );
 }
 
-CelluloVector* _CelluloBoxTopRight( CelluloBox cb ) {
-    return createCelluloVector( cb._left + cb._diameter, cb._top, 0 );
+CelluloVector* _CelluloBoxTopRight( CelluloBox* cb ) {
+    return createCelluloVector( cb->_left + cb->_diameter, cb->_top, 0 );
 }
 
-CelluloVector* _CelluloBoxBottomRight( CelluloBox cb ) {
-    return createCelluloVector( cb._left + cb._diameter, cb._top + cb._diameter, 0 );
+CelluloVector* _CelluloBoxBottomRight( CelluloBox* cb ) {
+    return createCelluloVector( cb->_left + cb->_diameter, cb->_top + cb->_diameter, 0 );
 }
     
-CelluloVector* _CelluloBoxBottomLeft( CelluloBox cb ) {
-    return createCelluloVector( cb._left, cb._top + cb._diameter, 0 );
+CelluloVector* _CelluloBoxBottomLeft( CelluloBox* cb ) {
+    return createCelluloVector( cb->_left, cb->_top + cb->_diameter, 0 );
 }
 
-CelluloBox* createCelluloBox( float l, float t ) {
+Vertex* _CelluloBoxVertices( CelluloBox* cb ) {
+    Vertex *vertex = (Vertex*)malloc(sizeof(Vertex)*4);
+//    (words*)malloc(sizeof(words) * 100);
+    CelluloVector* tl = cb->topLeft(cb);
+    CelluloVector* tr = cb->topRight(cb);
+    CelluloVector* br = cb->bottomRight(cb);
+    CelluloVector* bl = cb->bottomLeft(cb);
+    vertex[0] = (Vertex) {{tl->x,tl->y,tl->z},{1, 0, 0, 1}};
+    vertex[1] = (Vertex) {{tr->x,tr->y,tr->z},{1, 0, 0, 1}};
+    vertex[2] = (Vertex) {{br->x,br->y,br->z},{1, 0, 0, 1}};
+    vertex[3] = (Vertex) {{bl->x,bl->y,bl->z},{1, 0, 0, 1}};
+    return vertex;
+}
+CelluloBox* createCelluloBox( float l, float t, float diameter ) {
     CelluloBox* cb = malloc(sizeof(CelluloBox));
     cb->_top = t;
     cb->_left = l;
+    cb->_diameter = diameter;
     cb->topLeft = &_CelluloBoxTopLeft;
     cb->topRight = &_CelluloBoxTopRight;
     cb->bottomRight = &_CelluloBoxBottomRight;
     cb->bottomLeft = &_CelluloBoxBottomLeft;
+    cb->vertices = &_CelluloBoxVertices;
     return cb;
 }
 
 - (void)setupVBOs {
-    V vertexes[] = { {1,2,3} };
-    CelluloBox* cb = createCelluloBox(1.0, 5.0);
+    
+    CelluloBox* cb = createCelluloBox(-1.0, 1.0,2.0);
     CelluloVector* tl  = cb->topLeft(cb);
+//    Vertex* vertexes =
+    
+    Vertex* vertex = cb->vertices(cb);
     NSLog(@"cb->topLeft = (%f,%f)", tl->x, tl->y );
+    NSLog(@"vertexes[2] = %f",vertex->Color);
     
     GLuint vertexBuffer;
     glGenBuffers(1, &vertexBuffer);
@@ -263,7 +283,7 @@ CelluloBox* createCelluloBox( float l, float t ) {
                           3,
                           GL_FLOAT,
                           GL_FALSE,
-                          sizeof(V),
+                          sizeof(Vertex),
                           0
                           );
     
@@ -272,7 +292,7 @@ CelluloBox* createCelluloBox( float l, float t ) {
                           4,
                           GL_FLOAT,
                           GL_FALSE,
-                          sizeof(V),
+                          sizeof(Vertex),
                           (GLvoid*) (sizeof(float) * 3)
                           );
     
